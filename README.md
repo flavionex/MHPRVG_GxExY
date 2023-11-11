@@ -1,4 +1,4 @@
-# MHPRVG
+# MHPRVG for triple interaction : Genotype x Year x Environment
 MHPRVG stands for Media Harmonica da Performance Relativa do Valor Genotipico - Metodologia de Resende 2004  e 2007
 1) References:
       RESENDE, M. D. V. Métodos Estatísticos Ótimos na Análise de Experimentos de Campo. 
