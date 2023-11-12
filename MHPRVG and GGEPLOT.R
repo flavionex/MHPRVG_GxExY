@@ -6,8 +6,20 @@ setwd("C:\\Users\\flavi\\OneDrive\\Documentos\\MHPRVH GxExY\\MHPRVG_GxExY")
 #getwd()
 #dir()
 Dados<- read.csv("modelo_114_Data.csv",header = FALSE)#***Mudar ao Analisar
-names(Dados)<-c("Local","Observacoes","genotipo","rep_loc_Ano","Gen_ano","geno_loc", "gen-loc-ano","ano","var1","var2")
+names(Dados)<-c("Local","Observacoes","genotipo","rep_loc_Ano","Gen_ano","geno_loc", "gen_loc_ano","ano","var1","var2")
 #Dados<-Dados[complete.cases(Dados) & Dados$Plot.Discarded!="Yes",]
+
+Dados$Local<-factor(Dados$Local)
+Dados$Observacoes<-factor(Dados$Observacoes)
+Dados$genotipo<-factor(Dados$genotipo)
+Dados$rep_loc_Ano<-factor(Dados$rep_loc_Ano)
+Dados$Gen_ano<-factor(Dados$Gen_ano)
+Dados$geno_loc<-factor(Dados$geno_loc)
+Dados$gen_loc_ano<-factor(Dados$gen_loc_ano)
+Dados$ano<-factor(Dados$ano)
+
+  
+  
 
 #View(Dados)
 
@@ -24,7 +36,7 @@ summary(Dados)
 
 # Analise exploratoria ----------------------------------------------------
 
-resp<- Dados$Yield.kg.ha ###***Mudar ao analisar caractere diferente
+resp<- Dados$var1 ###***Mudar ao analisar caractere diferente
 
 #View(Dados) 
 data<-resp
@@ -43,7 +55,7 @@ expAnalysis<- function(data, digits=2){
 expAnalysis(resp)
 
 # Analise Exploratoria por Local ------------------------------------------
-envMeans<- aggregate(resp, by=list(Dados$Book.Name), FUN=expAnalysis)
+envMeans<- aggregate(resp, by=list(Dados$Local), FUN=expAnalysis)
 envMeans
 
 # Estimativa de Parametros Geneticos --------------------------------------
@@ -61,11 +73,13 @@ library(lme4)
 
 ### parcela Linear
 
-nREP<- nlevels(Dados$RepNo) #numero de blocos
+nREP<-nlevels(Dados$rep_loc_Ano)# nlevels(Dados$RepNo) #numero de blocos
+#nREP<-nlevels(Dados$RepNo) #numero de blocos
 #nPP<- 1 # numero de plantas por parcela caso houver
-nAMB<- nlevels(Dados$Book.Name) #Numero de ambientes
+#nAMB<- nlevels(Dados$Book.Name) #Numero de ambientes
+nAMB<- nlevels(Dados$Local) #Numero de ambientes
 
-m1<- lmer(resp ~ Book.Name + Book.Name:RepNo + (1|Material.Name) + (1|Book.Name:Material.Name) , data=Dados) #modelo de intercpto aleatorio
+m1<- lmer(resp ~ Dados$Local + Dados$Local:Dados$rep_loc_Ano + (1|Dados$genotipo) + (1|Dados$Local:Dados$genotipo) , data=Dados) #modelo de intercpto aleatorio
 
 summary(m1)
 
@@ -111,7 +125,7 @@ BLUP<- function(data){
   arrange(Bl, desc(Bl$"g+u"))
 }
 
-Blup_ord<- BLUP(ranef(m1)$Material.Name)
+Blup_ord<- BLUP(ranef(m1)$'Dados$genotipo')
 Blup_ord
 
 
@@ -119,19 +133,19 @@ Blup_ord
 # BLUPS - Por local
 ###############################
 
-BLUPge<- ranef(m1)$"Book.Name:Material.Name"
+BLUPge<- ranef(m1)$"Dados$Local:Dados$genotipo"
 BLUPge<- rownames_to_column(BLUPge)
 BLUPge<- separate(BLUPge, rowname, into = c("Book.Name", "Genotipo"),sep=":")
 colnames(BLUPge)<- c("Ambiente","Genotipo", "ge")
 
-Book.Name<- levels(Dados$Book.Name)
+Book.Name<- levels(Dados$Local)
 BLUPge_ord<- list()
 
 for(i in Book.Name){
   Blge<- BLUPge[BLUPge$Ambiente == i,]  #extrai somente o ambiente i
   Blge<- merge(Blge, Blup_ord, by="Genotipo", )  #merge uni dataframes de acordo com a coluna # *** tirei o "all=T" desta linha; Blge<- merge(Blge, Blup_ord, by="Genotipo", all=T) 
   Blege<- drop_na(Blge)                                 #caso exista Na ele tira
-  u<- mean(resp[Dados$Book.Name==i], na.rm=T)                 #media do ambiente i
+  u<- mean(resp[Dados$Local==i], na.rm=T)                 #media do ambiente i
   Blge$"g+ge"<- Blge$g + Blge$ge                   
   Blge$"g+ge+u"<- Blge$"g+ge"+u
   Blge<- Blge[,-c(3,4)]                            #tirar a coluna 3 e 4                       
@@ -170,7 +184,7 @@ MHVG_ord
 PRVG_data<- list()
 
 for(i in Book.Name){
-  u<- mean(resp[Dados$Book.Name==i], na.rm=T)
+  u<- mean(resp[Dados$Local==i], na.rm=T)
   dt<- BLUPge_ord[[i]]
   dt$"VGij/VGj"<- dt$"g+ge+u"/u
   PRVG_data[[i]]<- dt
