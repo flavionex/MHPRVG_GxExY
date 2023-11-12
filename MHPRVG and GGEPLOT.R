@@ -1,11 +1,12 @@
-
+library(readxl)
 # Setting Work Directory --------------------------------------------------
 
 
-setwd("C:\\Users\\arantefl\\Desktop\\Rice_data_2021")
-getwd()
-Dados<- read.csv("C:\\Users\\arantefl\\Desktop\\Rice_data_2021\\VCU SC CL.csv")#***Mudar ao Analisar
-
+setwd("C:\\Users\\flavi\\OneDrive\\Documentos\\MHPRVH GxExY\\MHPRVG_GxExY")
+#getwd()
+#dir()
+Dados<- read.csv("modelo_114_Data.csv",header = FALSE)#***Mudar ao Analisar
+names(Dados)<-c("Local","Observacoes","genotipo","rep_loc_Ano","Gen_ano","geno_loc", "gen-loc-ano","ano","var1","var2")
 #Dados<-Dados[complete.cases(Dados) & Dados$Plot.Discarded!="Yes",]
 
 #View(Dados)
