@@ -18,6 +18,15 @@ Dados$geno_loc<-factor(Dados$geno_loc)
 Dados$gen_loc_ano<-factor(Dados$gen_loc_ano)
 Dados$ano<-factor(Dados$ano)
 
+
+l<-Dados$Local
+obs<-Dados$Observacoes
+g<-Dados$genotipo
+bal<-Dados$rep_loc_Ano
+ga<-Dados$Gen_ano
+gl<-Dados$geno_loc
+gla<-Dados$gen_loc_ano
+a<-Dados$ano
   
   
 
@@ -62,12 +71,11 @@ envMeans
 
 
 str(Dados)
+ 
+# Dados$Book.Name<- as.factor(Dados$Book.Name)
+# Dados$Material.Name<- as.factor(Dados$Material.Name)
+# Dados$RepNo<- as.factor(Dados$RepNo)
 
-Dados$Book.Name<- as.factor(Dados$Book.Name)
-Dados$Material.Name<- as.factor(Dados$Material.Name)
-Dados$RepNo<- as.factor(Dados$RepNo)
-
-str(Dados)
 
 library(lme4)
 
@@ -79,9 +87,11 @@ nREP<-nlevels(Dados$rep_loc_Ano)# nlevels(Dados$RepNo) #numero de blocos
 #nAMB<- nlevels(Dados$Book.Name) #Numero de ambientes
 nAMB<- nlevels(Dados$Local) #Numero de ambientes
 
-m1<- lmer(resp ~ Dados$Local + Dados$Local:Dados$rep_loc_Ano + (1|Dados$genotipo) + (1|Dados$Local:Dados$genotipo) , data=Dados) #modelo de intercpto aleatorio
+m1<- lmer(resp ~ Dados$Local +  (1|Dados$genotipo) + (1|Dados$geno_loc) , data=Dados) #modelo de intercpto aleatorio
 
-summary(m1)
+m2<-lmer(resp~bal+(1|g)+(1|a)+(1|l)+(1|ga)+(1|gl)+(1|gla))
+
+summary(m2)
 
 vc<- as.data.frame(VarCorr(m1),comp="Variance")
 vc<- subset(vc,select = c("grp","vcov"))
@@ -133,7 +143,7 @@ Blup_ord
 # BLUPS - Por local
 ###############################
 
-BLUPge<- ranef(m1)$"Dados$Local:Dados$genotipo"
+BLUPge<- ranef(m1)$'Dados$Local:Dados$genotipo'
 BLUPge<- rownames_to_column(BLUPge)
 BLUPge<- separate(BLUPge, rowname, into = c("Book.Name", "Genotipo"),sep=":")
 colnames(BLUPge)<- c("Ambiente","Genotipo", "ge")
